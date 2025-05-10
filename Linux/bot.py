@@ -107,7 +107,8 @@ def decrypt_password(encrypted_password, key):
 class Botnet():
     def __init__(self):
         self.bots = []
-        self.botnet_file = 'botnet.json'
+        self.botnet_file = os.path.join(
+            os.path.dirname(__file__), 'botnet.json')
 
     def add_bot(self, host, username, password):
         for bot in self.bots:
