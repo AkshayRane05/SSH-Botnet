@@ -1,3 +1,5 @@
 ssh_botnet.py
 myenv/
 __pycache__/
+Linux/botnet.json
+Windows/botnet.json

